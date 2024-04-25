@@ -10,12 +10,19 @@ import axios from "axios";
 import { useState } from "react";
 
 export default function Home() {
+
+  //State Variable for handling username and DOB
   const [username, setUsername] = useState('');
   const [dob, setDob] = useState('');
+
+  //State Variable for handling visibilty of alert dialog
   const [alert, setAlert] = useState(false);
+
+  //State variables for handling Alert Dialog header and Message
   const [alertHeader, setAlertHeader] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
 
+  //Sample object in userData for table
   const [userData, setUserData] = useState([
     {
       username: "user1",
@@ -24,12 +31,14 @@ export default function Home() {
     },
   ]);
 
+  //Finding existence of any object ini userData array
   const findUser = (username: string) => userData.find(user => user.username === username);
 
-
+  //Function for handling adding new user to Database
   const handleAddEntry = async () => {
 
     if (username && dob) {
+      //Date conversion to YYYY-MM-DD format
       const formattedDob = new Date(dob).toISOString().slice(0,10);
       console.log('Username:', username);
       console.log('Date of Birth:', formattedDob);
@@ -42,7 +51,8 @@ export default function Home() {
           }
         );
         // console.log(`RESPONSE - ${JSON.stringify(response)}`);
-        
+
+        //New user object
         const newUser = {
           username: response.data.user.username,
           DOB: formattedDob,
@@ -67,6 +77,7 @@ export default function Home() {
     }
   }
 
+  //Function for handling user details updation
   const updateUserDetails = async () => {
     if (username && dob) {
       const formattedDob = new Date(dob).toISOString().slice(0,10);
@@ -81,6 +92,7 @@ export default function Home() {
           }
         );
         
+        //New User Object after updation
         const newUser = {
           username: response.data.user.username,
           DOB: formattedDob,
@@ -104,6 +116,7 @@ export default function Home() {
     }
   }
 
+  //Function for handling getting user's Api Called Count
   const getUserApiCalledCount = async () => {
     if(username){
       
@@ -131,6 +144,7 @@ export default function Home() {
           direction="vertical"
           className="bg-fuchsia-600"
         >
+          {/* {***********UI FOR 3 RESIZABLE DIV*****************} */}
           <ResizablePanel defaultSize={50} maxSize={70} >
             <ResizablePanelGroup direction="horizontal" >
               <ResizablePanel defaultSize={25} maxSize={60} >
@@ -157,7 +171,6 @@ export default function Home() {
                       </TableBody>
                     </Table>
                   </div>
-                  {/* <span className="font-semibold">One</span> */}
                 </div>
               </ResizablePanel>
               <ResizableHandle />
@@ -184,7 +197,6 @@ export default function Home() {
                       </TableBody>
                     </Table>
                   </div>
-                  {/* <span className="font-semibold">Two</span> */}
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
@@ -219,6 +231,7 @@ export default function Home() {
         </ResizablePanelGroup>
       </div>
 
+      {/*************SIDE DRAWER FOR ADDING USER DETAILS AS INPUT********************** */}
       <div className="flex flex-col gap-4">
         <Sheet>
           <SheetTrigger asChild>
@@ -260,6 +273,10 @@ export default function Home() {
           </SheetContent>
         </Sheet>
 
+
+        {/*************SIDE DRAWER FOR UPDATING USER DETAILS AS INPUT******************** */}
+
+
         <Sheet>
           <SheetTrigger asChild>
             <Button >Update</Button>
@@ -300,6 +317,7 @@ export default function Home() {
           </SheetContent>
         </Sheet>
 
+{/*************SIDE DRAWER FOR GETTING API CALLED COUNT OF ANY USER ********************** */}
 
         <Sheet>
           <SheetTrigger asChild>
@@ -331,6 +349,8 @@ export default function Home() {
           </SheetContent>
         </Sheet>
                 
+{/*************CONDITIONALLY SHOWING ALERT BOX FOR ERROR AND RESPONSE MESSAGES********************** */}
+
         {alert &&
           <AlertDialog open={alert} onOpenChange={setAlert} >
             <AlertDialogContent>

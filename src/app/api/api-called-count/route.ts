@@ -7,7 +7,6 @@ export async function GET(request: Request){
     try {
         const{searchParams} = new URL(request.url);
         const username = searchParams.get('username');
-        // const {username} = await request.json();
         const user = await userModel.findOne(
             {
                 username

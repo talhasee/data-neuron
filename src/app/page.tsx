@@ -7,7 +7,16 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {Spinner} from "@nextui-org/spinner";
+ 
+// Define the type for user data
+type User = {
+  username: string;
+  DOB: string;
+  apiCalled: number;
+ };
+ 
 
 export default function Home() {
 
@@ -23,13 +32,50 @@ export default function Home() {
   const [alertMessage, setAlertMessage] = useState("");
 
   //Sample object in userData for table
-  const [userData, setUserData] = useState([
-    {
-      username: "user1",
-      DOB: "1990-01-01",
-      apiCalled: 3
-    },
-  ]);
+  const [userData, setUserData] = useState<User[]>([]);
+
+  //Loading state variable
+  const [loading, setLoading] = useState(false);
+
+  let executed = false;
+
+  //Fetching all the users on intial page render
+  useEffect( () => {
+    const fetchAllUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`/api/get-all-users`);
+
+        const users = response.data.users;
+
+        for(let i = 0; i < users.length; i++){
+          const temp = users[i];
+
+          const isoDate = temp.dateOfBirth;
+          const dateObject = new Date(isoDate);
+          const formattedDate = dateObject.toISOString().slice(0, 10);
+          const newUser = {
+            username: temp.username,
+            DOB: formattedDate,
+            apiCalled: temp.apiCalled
+          }
+          setUserData(prevData => [...prevData, newUser]);
+
+        }
+        
+
+      } catch (error) {
+        console.error(`Error in fetching all users`);
+      }finally{
+        setLoading(false);
+      }
+    }
+    if(!executed){
+      fetchAllUsers();
+      executed = true;
+    }
+  },[])
+
 
   //Finding existence of any object ini userData array
   const findUser = (username: string) => userData.find(user => user.username === username);
@@ -75,6 +121,11 @@ export default function Home() {
         setAlertMessage(`Error in adding user. Please try again later!!!`);
       }
     }
+    else{
+      setAlert(true);
+      setAlertHeader("Invalid Input")
+      setAlertMessage(`Error in adding user. Please check your input!!`);
+    }
   }
 
   //Function for handling user details updation
@@ -114,6 +165,11 @@ export default function Home() {
         setAlertMessage("User does not exists please add this user first.");
       }
     }
+    else{
+      setAlert(true);
+      setAlertHeader("Invalid Input")
+      setAlertMessage(`Error in updating user details. Please check your input!!`);
+    }
   }
 
   //Function for handling getting user's Api Called Count
@@ -135,6 +191,11 @@ export default function Home() {
       }
 
     }
+    else{
+      setAlert(true);
+      setAlertHeader("Invalid Input")
+      setAlertMessage(`Error in fetching user API called count. Please check your input!!`);
+    }
   }
  
   return (
@@ -151,6 +212,9 @@ export default function Home() {
                 <div className="flex h-full items-center justify-center p-6 bg-purple-700">
 
                   <div className="m-2 w-full h-full max-w-[800px] overflow-y-auto">
+                    {
+                      loading && <Spinner color="warning"/>
+                    }
                     <Table className="w-full ">
                       <TableCaption className="text-white font-bold">A list of user details.</TableCaption>
                       <TableHeader>
@@ -177,6 +241,9 @@ export default function Home() {
               <ResizablePanel defaultSize={60} maxSize={80}>
                 <div className="flex h-full items-center justify-center p-6 bg-rose-800">
                 <div className="m-2 w-full h-full max-w-[800px] overflow-y-auto">
+                    {
+                      loading && <Spinner color="warning"/>
+                    }
                     <Table className="w-full ">
                       <TableCaption className="text-white font-bold">A list of user details.</TableCaption>
                       <TableHeader>
@@ -205,6 +272,9 @@ export default function Home() {
           <ResizablePanel defaultSize={50} maxSize={70}>
             <div className="flex h-full items-center justify-center p-6 bg-orange-900">
             <div className="m-2 w-full h-full max-w-[800px] overflow-y-auto">
+              {
+                loading && <Spinner color="warning"/>
+              }
               <Table className="w-full ">
                 <TableCaption className="text-white font-bold">A list of user details.</TableCaption>
                 <TableHeader>
@@ -355,9 +425,9 @@ export default function Home() {
           <AlertDialog open={alert} onOpenChange={setAlert} >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>${alertHeader}</AlertDialogTitle>
+                <AlertDialogTitle>{alertHeader}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  ${alertMessage}
+                  {alertMessage}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
